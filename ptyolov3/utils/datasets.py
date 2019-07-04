@@ -149,3 +149,27 @@ class ListDataset(Dataset):
 
     def __len__(self):
         return len(self.img_files)
+
+
+def image_tensor_from_array(image_array, output_size):
+    ''' Convert image stored as numpy array to Tensor for inference '''
+
+    assert image_array.ndim == 3 and image_array.shape[2] == 3, 'Input array must have shape [?,?,3]'
+    
+    # convert from uint8 [0,255] to float [0,1]
+    if image_array.dtype == 'uint8': image_array = image_array / 255
+    
+    Tensor = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
+
+    # convert from (w,h,c) array to tensor in (c,w,h) format
+    img = torch.from_numpy(image_array).type(Tensor).permute(2,0,1)
+
+    # Pad to square resolution
+    img, _ = pad_to_square(img, 0)
+    # Resize
+    img = resize(img, output_size)
+
+    # prepend extra dimension for batch size
+    img = img[None]
+
+    return img
