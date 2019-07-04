@@ -151,7 +151,7 @@ class ListDataset(Dataset):
         return len(self.img_files)
 
 
-def image_tensor_from_array(image_array, output_size):
+def image_tensor_from_array(image_array, img_size):
     ''' Convert image stored as numpy array to Tensor for inference '''
 
     assert image_array.ndim == 3 and image_array.shape[2] == 3, 'Input array must have shape [?,?,3]'
@@ -167,7 +167,7 @@ def image_tensor_from_array(image_array, output_size):
     # Pad to square resolution
     img, _ = pad_to_square(img, 0)
     # Resize
-    img = resize(img, output_size)
+    img = resize(img, img_size)
 
     # prepend extra dimension for batch size
     img = img[None]

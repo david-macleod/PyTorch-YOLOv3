@@ -49,6 +49,17 @@ def rescale_boxes(boxes, current_dim, original_shape):
     boxes[:, 3] = ((boxes[:, 3] - pad_y // 2) / unpad_h) * orig_h
     return boxes
 
+def normalize_boxes(boxes, original_shape):
+    """ Normalize box coords between [0,1] """
+    orig_h, orig_w = original_shape
+
+    boxes[:, 0] = boxes[:, 0] / orig_w
+    boxes[:, 1] = boxes[:, 1] / orig_h
+    boxes[:, 2] = boxes[:, 2] / orig_w
+    boxes[:, 3] = boxes[:, 3] / orig_h
+
+    return boxes
+
 
 def xywh2xyxy(x):
     y = x.new(x.shape)
@@ -319,3 +330,23 @@ def build_targets(pred_boxes, pred_cls, target, anchors, ignore_thres):
 
     tconf = obj_mask.float()
     return iou_scores, class_mask, obj_mask, noobj_mask, tx, ty, tw, th, tcls, tconf
+
+def process_detections(raw_detections, conf_threshold, nms_threshold, img_size, orig_img_shape):
+    '''
+    Apply NMS to raw detections, convert boxes to x,y corner points and normalize coordinates
+    
+    :param conf_threshold: confidence threshold for box suppression
+    :param nms_thredhold: iou threshold for overlapping box supression
+    :param img_size: image size after squaring/resizing for input layer
+    :param orig_img_shape: (w,h) pixel dimensions of original image 
+    :returns: Tensor containing (x1, y1, x2, y2, object_conf, class_score, class_pred)
+    '''
+    orig_w, orig_h = orig_img_shape
+
+    nms_detections = non_max_suppression(raw_detections, conf_threshold, nms_threshold)
+
+    rescaled_detections = rescale_boxes(nms_detections[0], img_size, orig_img_shape)
+
+    normalized_detections = normalize_boxes(rescaled_detections, orig_img_shape)
+
+    return normalized_detections
