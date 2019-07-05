@@ -36,10 +36,11 @@ if __name__ == "__main__":
     parser.add_argument("--evaluation_interval", type=int, default=1, help="interval evaluations on validation set")
     parser.add_argument("--compute_map", default=False, help="if True computes mAP every tenth batch")
     parser.add_argument("--multiscale_training", default=True, help="allow for multi-scale training")
+    parser.add_argument("--output_dir", default="", help="output directory for checkpoints/")
     opt = parser.parse_args()
     print(opt)
 
-    logger = Logger("logs")
+    logger = Logger(f"{opt.output_dir}/logs")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -175,4 +176,4 @@ if __name__ == "__main__":
             print(f"---- mAP {AP.mean()}")
 
         if epoch % opt.checkpoint_interval == 0:
-            torch.save(model.state_dict(), f"checkpoints/yolov3_ckpt_%d.pth" % epoch)
+            torch.save(model.state_dict(), f"{opt.output_dir}/checkpoints/yolov3_ckpt_{epoch}.pth")
