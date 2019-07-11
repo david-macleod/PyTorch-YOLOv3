@@ -188,6 +188,7 @@ def get_batch_statistics(outputs, targets, iou_threshold):
                 if iou >= iou_threshold and box_index not in detected_boxes:
                     true_positives[pred_i] = 1
                     detected_boxes += [box_index]
+
         batch_metrics.append([true_positives, pred_scores, pred_labels])
     return batch_metrics
 
